@@ -1,0 +1,47 @@
+Running grain storage benchmark against AdoNet
+GrainStorage1OrgBenchmark - False
+Performed 13616 persist (read & write) operations with 0 failures in 30246ms.
+Average time in ms per call was 215.01389011166694, with longest call taking 970.3029ms.
+Total time waiting for the persistent store was 2926769.0722000105ms.
+Execution Plan Size 5560 kbyte.
+Elapsed milliseconds: 30379
+
+Running grain storage benchmark against AdoNet
+GrainStorage1ModBenchmark - True
+Performed 13277 persist (read & write) operations with 0 failures in 30148ms.
+Average time in ms per call was 220.97978147366828, with longest call taking 851.5741ms.
+Total time waiting for the persistent store was 2933064.639499999ms.
+Execution Plan Size 8688 kbyte.
+Elapsed milliseconds: 30317
+
+Running grain storage benchmark against AdoNet
+GrainStorage2OrgBenchmark - False
+Performed 8168 persist (read & write) operations with 0 failures in 30218ms.
+Average time in ms per call was 362.63995012248813, with longest call taking 1424.5776ms.
+Total time waiting for the persistent store was 2960592.552799993ms.
+Execution Plan Size 15904 kbyte.
+Elapsed milliseconds: 30452
+
+Running grain storage benchmark against AdoNet
+GrainStorage2ModBenchmark - True
+Performed 8273 persist (read & write) operations with 0 failures in 30247ms.
+Average time in ms per call was 358.5464012577096, with longest call taking 1522.1657ms.
+Total time waiting for the persistent store was 2964820.1920000007ms.
+Execution Plan Size 6464 kbyte.
+Elapsed milliseconds: 30331
+
+Running grain storage benchmark against AdoNet
+GrainStorage3OrgBenchmark - False
+Performed 8169 persist (read & write) operations with 0 failures in 30438ms.
+Average time in ms per call was 363.20021043478306, with longest call taking 961.6511ms.
+Total time waiting for the persistent store was 2965529.7182000037ms.
+Execution Plan Size 48200 kbyte.
+Elapsed milliseconds: 30998
+
+Running grain storage benchmark against AdoNet
+GrainStorage3ModBenchmark - True
+Performed 8199 persist (read & write) operations with 0 failures in 30330ms.
+Average time in ms per call was 362.4139730201344, with longest call taking 1212.4337ms.
+Total time waiting for the persistent store was 2969982.508900001ms.
+Execution Plan Size 6552 kbyte.
+Elapsed milliseconds: 30456

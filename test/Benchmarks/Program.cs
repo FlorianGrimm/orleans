@@ -211,7 +211,7 @@ namespace Benchmarks
                 "Running grain storage benchmark against memory",
                 () =>
                 {
-                    var benchmark = new GrainStorageBenchmark(10, 10000, TimeSpan.FromSeconds( 30 ));
+                    var benchmark = new GrainStorage1ModBenchmark(10, 10000, TimeSpan.FromSeconds( 30 ));
                     benchmark.MemorySetup();
                     return benchmark;
                 },
@@ -224,7 +224,7 @@ namespace Benchmarks
                 "Running grain storage benchmark against Azure Table",
                 () =>
                 {
-                    var benchmark = new GrainStorageBenchmark(100, 10000, TimeSpan.FromSeconds( 30 ));
+                    var benchmark = new GrainStorage1ModBenchmark(100, 10000, TimeSpan.FromSeconds( 30 ));
                     benchmark.AzureTableSetup();
                     return benchmark;
                 },
@@ -237,20 +237,85 @@ namespace Benchmarks
                 "Running grain storage benchmark against Azure Blob",
                 () =>
                 {
-                    var benchmark = new GrainStorageBenchmark(10, 10000, TimeSpan.FromSeconds( 30 ));
+                    var benchmark = new GrainStorage1ModBenchmark(10, 10000, TimeSpan.FromSeconds( 30 ));
                     benchmark.AzureBlobSetup();
                     return benchmark;
                 },
                 benchmark => benchmark.RunAsync().GetAwaiter().GetResult(),
                 benchmark => benchmark.Teardown());
             },
-            ["GrainStorage.AdoNet"] = _ =>
+            ["GrainStorage1Org.AdoNet"] = _ =>
             {
                 RunBenchmark(
                 "Running grain storage benchmark against AdoNet",
                 () =>
                 {
-                    var benchmark = new GrainStorageBenchmark(100, 10000, TimeSpan.FromSeconds( 30 ));
+                    var benchmark = new GrainStorage1OrgBenchmark(100, 10000, TimeSpan.FromSeconds( 30 ));
+                    benchmark.AdoNetSetup();
+                    return benchmark;
+                },
+                benchmark => benchmark.RunAsync().GetAwaiter().GetResult(),
+                benchmark => benchmark.Teardown());
+            },
+            ["GrainStorage1Mod.AdoNet"] = _ =>
+            {
+                RunBenchmark(
+                "Running grain storage benchmark against AdoNet",
+                () =>
+                {
+                    var benchmark = new GrainStorage1ModBenchmark(100, 10000, TimeSpan.FromSeconds(30));
+                    benchmark.AdoNetSetup();
+                    return benchmark;
+                },
+                benchmark => benchmark.RunAsync().GetAwaiter().GetResult(),
+                benchmark => benchmark.Teardown());
+            },
+            ["GrainStorage2Org.AdoNet"] = _ =>
+            {
+                RunBenchmark(
+                "Running grain storage benchmark against AdoNet",
+                () =>
+                {
+                    var benchmark = new GrainStorage2OrgBenchmark(100, 100000, TimeSpan.FromSeconds(30));
+                    benchmark.AdoNetSetup();
+                    return benchmark;
+                },
+                benchmark => benchmark.RunAsync().GetAwaiter().GetResult(),
+                benchmark => benchmark.Teardown());
+            },
+            ["GrainStorage2Mod.AdoNet"] = _ =>
+            {
+                RunBenchmark(
+                "Running grain storage benchmark against AdoNet",
+                () =>
+                {
+                    var benchmark = new GrainStorage2ModBenchmark(100, 100000, TimeSpan.FromSeconds(30));
+                    benchmark.AdoNetSetup();
+                    return benchmark;
+                },
+                benchmark => benchmark.RunAsync().GetAwaiter().GetResult(),
+                benchmark => benchmark.Teardown());
+            },
+            ["GrainStorage3Org.AdoNet"] = _ =>
+            {
+                RunBenchmark(
+                "Running grain storage benchmark against AdoNet",
+                () =>
+                {
+                    var benchmark = new GrainStorage3OrgBenchmark(100, 100000, TimeSpan.FromSeconds(30));
+                    benchmark.AdoNetSetup();
+                    return benchmark;
+                },
+                benchmark => benchmark.RunAsync().GetAwaiter().GetResult(),
+                benchmark => benchmark.Teardown());
+            },
+            ["GrainStorage3Mod.AdoNet"] = _ =>
+            {
+                RunBenchmark(
+                "Running grain storage benchmark against AdoNet",
+                () =>
+                {
+                    var benchmark = new GrainStorage3ModBenchmark(100, 100000, TimeSpan.FromSeconds(30));
                     benchmark.AdoNetSetup();
                     return benchmark;
                 },
@@ -295,9 +360,9 @@ namespace Benchmarks
             var stopWatch = Stopwatch.StartNew();
             benchmarkAction(bench);
             Console.WriteLine($"Elapsed milliseconds: {stopWatch.ElapsedMilliseconds}");
-            Console.WriteLine("Press any key to continue ...");
+            //Console.WriteLine("Press any key to continue ...");
             tearDown(bench);
-            Console.ReadLine();
+            //Console.ReadLine();
         }
     }
 }

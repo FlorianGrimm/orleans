@@ -1,3 +1,4 @@
+//https://www.red-gate.com/simple-talk/databases/sql-server/t-sql-programming-sql-server/performance-implications-of-parameterized-queries/
 using Orleans.Persistence.AdoNet.Storage;
 using Orleans.Providers;
 using Orleans.Runtime;
@@ -71,6 +72,8 @@ namespace Orleans.Storage
     [DebuggerDisplay("Name = {Name}, ConnectionString = {Storage.ConnectionString}")]
     public class AdoNetGrainStorage: IGrainStorage, ILifecycleParticipant<ISiloLifecycle>
     {
+        public static bool HackFlag = false;
+
         public IGrainStorageSerializer Serializer { get; set; }
 
         /// <summary>
@@ -170,14 +173,25 @@ namespace Orleans.Storage
                 var grainTypeHash = HashPicker.PickHasher(serviceId, this.name, baseGrainType, grainReference, grainState).Hash(Encoding.UTF8.GetBytes(baseGrainType));
                 var clearRecord = (await Storage.ReadAsync(CurrentOperationalQueries.ClearState, command =>
                 {
-                    command.AddParameter("GrainIdHash", grainIdHash);
-                    command.AddParameter("GrainIdN0", grainId.N0Key);
-                    command.AddParameter("GrainIdN1", grainId.N1Key);
-                    command.AddParameter("GrainTypeHash", grainTypeHash);
-                    command.AddParameter("GrainTypeString", baseGrainType);
-                    command.AddParameter("GrainIdExtensionString", grainId.StringKey);
-                    command.AddParameter("ServiceId", serviceId);
-                    command.AddParameter("GrainStateVersion", !string.IsNullOrWhiteSpace(grainState.ETag) ? int.Parse(grainState.ETag, CultureInfo.InvariantCulture) : default(int?));
+                    if (!HackFlag) {
+                        command.AddParameter("GrainIdHash", grainIdHash);
+                        command.AddParameter("GrainIdN0", grainId.N0Key);
+                        command.AddParameter("GrainIdN1", grainId.N1Key);
+                        command.AddParameter("GrainTypeHash", grainTypeHash);
+                        command.AddParameter("GrainTypeString", baseGrainType);
+                        command.AddParameter("GrainIdExtensionString", grainId.StringKey);
+                        command.AddParameter("ServiceId", serviceId);
+                        command.AddParameter("GrainStateVersion", !string.IsNullOrWhiteSpace(grainState.ETag) ? int.Parse(grainState.ETag, CultureInfo.InvariantCulture) : default(int?));
+                    } else {
+                        command.AddParameter("GrainIdHash", grainIdHash, ParameterDirection.Input, null, DbType.Int32);
+                        command.AddParameter("GrainIdN0", grainId.N0Key, ParameterDirection.Input, null, DbType.Int64);
+                        command.AddParameter("GrainIdN1", grainId.N1Key, ParameterDirection.Input, null, DbType.Int64);
+                        command.AddParameter("GrainTypeHash", grainTypeHash, ParameterDirection.Input, null, DbType.Int32);
+                        command.AddParameter("GrainTypeString", baseGrainType, ParameterDirection.Input, 512, DbType.String);
+                        command.AddParameter("GrainIdExtensionString", grainId.StringKey, ParameterDirection.Input, 512, DbType.String);
+                        command.AddParameter("ServiceId", serviceId, ParameterDirection.Input, 150, DbType.String);
+                        command.AddParameter("GrainStateVersion", !string.IsNullOrWhiteSpace(grainState.ETag) ? int.Parse(grainState.ETag, CultureInfo.InvariantCulture) : default(int?));
+                    }
                 }, (selector, resultSetCount, token) => Task.FromResult(selector.GetValue(0).ToString()), cancellationToken: CancellationToken.None).ConfigureAwait(false));
                 storageVersion = clearRecord.SingleOrDefault();
             }
@@ -248,13 +262,23 @@ namespace Orleans.Storage
                     CurrentOperationalQueries.ReadFromStorage,
                     command =>
                     {
-                        command.AddParameter("GrainIdHash", grainIdHash);
-                        command.AddParameter("GrainIdN0", grainId.N0Key);
-                        command.AddParameter("GrainIdN1", grainId.N1Key);
-                        command.AddParameter("GrainTypeHash", grainTypeHash);
-                        command.AddParameter("GrainTypeString", baseGrainType);
-                        command.AddParameter("GrainIdExtensionString", grainId.StringKey);
-                        command.AddParameter("ServiceId", serviceId);
+                        if (!HackFlag) {
+                            command.AddParameter("GrainIdHash", grainIdHash);
+                            command.AddParameter("GrainIdN0", grainId.N0Key);
+                            command.AddParameter("GrainIdN1", grainId.N1Key);
+                            command.AddParameter("GrainTypeHash", grainTypeHash);
+                            command.AddParameter("GrainTypeString", baseGrainType);
+                            command.AddParameter("GrainIdExtensionString", grainId.StringKey);
+                            command.AddParameter("ServiceId", serviceId);
+                        } else {
+                            command.AddParameter("GrainIdHash", grainIdHash, ParameterDirection.Input, null, DbType.Int32);
+                            command.AddParameter("GrainIdN0", grainId.N0Key, ParameterDirection.Input, null, DbType.Int64);
+                            command.AddParameter("GrainIdN1", grainId.N1Key, ParameterDirection.Input, null, DbType.Int64);
+                            command.AddParameter("GrainTypeHash", grainTypeHash, ParameterDirection.Input, null, DbType.Int32);
+                            command.AddParameter("GrainTypeString", baseGrainType, ParameterDirection.Input, 512, DbType.String);
+                            command.AddParameter("GrainIdExtensionString", grainId.StringKey, ParameterDirection.Input, 512, DbType.String);
+                            command.AddParameter("ServiceId", serviceId, ParameterDirection.Input, 150, DbType.String);
+                        }
                     },
                     (selector, resultSetCount, token) =>
                     {
@@ -348,16 +372,27 @@ namespace Orleans.Storage
                 var writeRecord = await Storage.ReadAsync(CurrentOperationalQueries.WriteToStorage, command =>
                 {
                     var serialized = this.Serializer.Serialize<T>(grainState.State);
-
-                    command.AddParameter("GrainIdHash", grainIdHash);
-                    command.AddParameter("GrainIdN0", grainId.N0Key);
-                    command.AddParameter("GrainIdN1", grainId.N1Key);
-                    command.AddParameter("GrainTypeHash", grainTypeHash);
-                    command.AddParameter("GrainTypeString", baseGrainType);
-                    command.AddParameter("GrainIdExtensionString", grainId.StringKey);
-                    command.AddParameter("ServiceId", serviceId);
-                    command.AddParameter("GrainStateVersion", !string.IsNullOrWhiteSpace(grainState.ETag) ? int.Parse(grainState.ETag, CultureInfo.InvariantCulture) : default(int?));
-                    command.AddParameter("PayloadBinary", serialized.ToArray());
+                    if (!HackFlag) {
+                        command.AddParameter("GrainIdHash", grainIdHash);
+                        command.AddParameter("GrainIdN0", grainId.N0Key);
+                        command.AddParameter("GrainIdN1", grainId.N1Key);
+                        command.AddParameter("GrainTypeHash", grainTypeHash);
+                        command.AddParameter("GrainTypeString", baseGrainType);
+                        command.AddParameter("GrainIdExtensionString", grainId.StringKey);
+                        command.AddParameter("ServiceId", serviceId);
+                        command.AddParameter("GrainStateVersion", !string.IsNullOrWhiteSpace(grainState.ETag) ? int.Parse(grainState.ETag, CultureInfo.InvariantCulture) : default(int?));
+                        command.AddParameter("PayloadBinary", serialized.ToArray());
+                    } else {
+                        command.AddParameter("GrainIdHash", grainIdHash, ParameterDirection.Input, null, DbType.Int32);
+                        command.AddParameter("GrainIdN0", grainId.N0Key, ParameterDirection.Input, null, DbType.Int64);
+                        command.AddParameter("GrainIdN1", grainId.N1Key, ParameterDirection.Input, null, DbType.Int64);
+                        command.AddParameter("GrainTypeHash", grainTypeHash, ParameterDirection.Input, null, DbType.Int32);
+                        command.AddParameter("GrainTypeString", baseGrainType, ParameterDirection.Input, 512, DbType.String);
+                        command.AddParameter("GrainIdExtensionString", grainId.StringKey, ParameterDirection.Input, 512, DbType.String);
+                        command.AddParameter("ServiceId", serviceId, ParameterDirection.Input, 150, DbType.String);
+                        command.AddParameter("GrainStateVersion", !string.IsNullOrWhiteSpace(grainState.ETag) ? int.Parse(grainState.ETag, CultureInfo.InvariantCulture) : default(int?), ParameterDirection.Input, null, DbType.Int32);
+                        command.AddParameter("PayloadBinary", serialized.ToArray(), ParameterDirection.Input, int.MaxValue, DbType.Binary);
+                    }
                 }, (selector, resultSetCount, token) =>
                 { return Task.FromResult(selector.GetNullableInt32("NewGrainStateVersion").ToString()); }, cancellationToken: CancellationToken.None).ConfigureAwait(false);
                 storageVersion = writeRecord.SingleOrDefault();
